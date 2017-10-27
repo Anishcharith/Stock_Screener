@@ -55,7 +55,12 @@ def homepage():
 
 @app.route('/dashboard/', methods = ['GET', 'POST'])
 def dashboard():
-
+    try:
+        if session["logged_in"] == True:    
+            flash('Logged in')
+            return render_template("dashboard.html")
+    except:
+        return redirect(url_for("login"))
 
 @app.route('/header/', methods=['GET','POST'])
 def header():
@@ -75,13 +80,19 @@ def login():
         c,conn=connection()
         attempted_username=request.form["username"]
         attempted_password=request.form["password"]
-        data=c.execute("SELECT * FROM users WHERE username='%s';"%str(thwart(attempted_username)))
+        data=c.execute("SELECT * FROM users WHERE username='%s';"%str((attempted_username)))
         data=c.fetchone()
-        if sha256_crypt.verify(attempted_password,data):
+        if sha256_crypt.verify(attempted_password,data[2]):
             session["logged_in"] = True
             session["username"] = data[1]
             return redirect(url_for("dashboard"))
     return render_template("login.html")
+
+@app.route('/login/',methods=['GET','POST'])
+def logout():
+    session.clear() 
+    flash("Successfully Signed Out")
+    return redirect(url_for("dashboard"))
 
 @app.route('/register/',methods=['GET','POST'])
 def register_page():
@@ -93,12 +104,12 @@ def register_page():
         if not(password!=repassword or email==None or len(username)<3 or len(password)<3):
             password=sha256_crypt.encrypt(str(password))
             c,conn=connection()
-            thwart(username)
-            x=c.execute("select * from users where username='"+str(thwart(username))+"'")
+            (username)
+            x=c.execute("select * from users where username='"+str((username))+"'")
             if int(x)>0:
                 return render_template("register.html")
             else:
-                c.execute("INSERT INTO users (username,password,email) VALUES ('%s','%s','%s');"%(str(thwart(username)),str(thwart(password)),str(thwart(email))))
+                c.execute("INSERT INTO users (username,password,email) VALUES ('%s','%s','%s');"%(str((username)),str((password)),str((email))))
                 conn.commit()
                 c.close()
                 conn.close()
@@ -162,10 +173,11 @@ def Technical(comp):
         graph_data2014=graph.render_data_uri()
         return render_template("compdata.html",comp=comp,graph_data2017=graph_data2017,graph_data2016=graph_data2016,graph_data2015=graph_data2015,graph_data2014=graph_data2014)
 
-@app.route('/screens/')
+@app.route('/screens/',methods=['GET','POST'])
 def screens():
+    try:
         if session["logged_in"] == True :
-            if request.methdod == "POST":
+            if request.method == "POST":
                 QUERY = request.form["search_query"]
                 dfs = []
                 CHUNKS = QUERY.split("AND")
@@ -174,11 +186,12 @@ def screens():
                     chunk = chunk.split(" ")
                     dfs.append(pd.DataFrame(screen(chunk), columns = ["compname", "Years", chunk[0][:-1]]))
                 df_final = reduce(lambda left,right: pd.merge(left,right,on='compname'), dfs)
-                '''dbms shit'''
             else:
                 return render_template("screens.html")
         else:
             return redirect(url_for("login"))
+    except:
+        return redirect(url_for("login"))
 
 
 
