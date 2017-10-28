@@ -2,7 +2,6 @@ from flask import Flask, render_template, flash, request, redirect, url_for, ses
 from content_management import content
 from dbconnect import connection
 import numpy as np
-#from wtforms import Form
 import pandas as pd
 import datetime
 
@@ -29,15 +28,6 @@ def screen(chunk):
         c.close()
         c = conn.cursor()
     return ans
-
-
-
-
-
-
-
-
-
 
 
 app = Flask(__name__)
@@ -88,11 +78,10 @@ def login():
             return redirect(url_for("dashboard"))
     return render_template("login.html")
 
-@app.route('/login/',methods=['GET','POST'])
+@app.route('/logout/',methods=['GET','POST'])
 def logout():
     session.clear() 
-    flash("Successfully Signed Out")
-    return redirect(url_for("dashboard"))
+    return redirect(url_for("homepage"))
 
 @app.route('/register/',methods=['GET','POST'])
 def register_page():
@@ -123,7 +112,7 @@ def Technical(comp):
     query = "SELECT * FROM %s_F ;"%(comp)
     c.execute(query)
     data_F = c.fetchall()
-    header = ["Year", "Sales",	"Depr.",	"Int.",	"PBT","Tax", "NP", "Div_Amt", "Eq_Share_Cap", "Reserves","Borrowings", "Oth_Liab", "Net_Block", "CWIP",	"Inv", "Oth_Assets", "Rcvbles", "Inven.", "Cash","Eq_Shares"]
+    header = ["Year", "Sales",	"Depr.", "Int.", "PBT","Tax", "NP", "Div_Amt", "Eq_Share_Cap", "Reserves","Borrowings", "Oth_Liab", "Net_Block", "CWIP",	"Inv", "Oth_Assets", "Rcvbles", "Inven.", "Cash","Eq_Shares"]
     # print(data)
     # return render_template("compdata.html",comp=comp,graph_data2017=graph_data2017,graph_data2016=graph_data2016,graph_data2015=graph_data2015,graph_data2014=graph_data2014, data = data)
     #return render_template("compadata.html",comp=comp, data_F = data_F, header = header)
@@ -132,26 +121,16 @@ def Technical(comp):
         return redirect(url_for("Technical",comp=compx))
     else:
         c,conn=connection()
-        c.execute("SELECT * FROM "+comp+"_T WHERE year(Date) = 2017")
-        graph=pygal.Line()
+        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<30;")
+        graph=pygal.Line()#explicit_size=True )#,width=1500, height=600)
         data=c.fetchall()
         date=pd.DatetimeIndex(np.array(data)[:,0])
         #print(date)
         graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
         #graph.x_labels=map(str,set(date.month))
         graph.add(comp,np.array(data)[:,1])
-        graph_data2017=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T WHERE year(Date) = 2016")
-        graph=pygal.Line()
-        data=c.fetchall()
-        date=pd.DatetimeIndex(np.array(data)[:,0])
-        #print(date)
-        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-        #graph.x_labels=map(str,set(date.month))
-        #graph.x_labels=date.day
-        graph.add(comp,np.array(data)[:,1])
-        graph_data2016=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T WHERE year(Date) = 2015")
+        graph_data1m=graph.render_data_uri()
+        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<90;")
         graph=pygal.Line()
         data=c.fetchall()
         date=pd.DatetimeIndex(np.array(data)[:,0])
@@ -160,8 +139,18 @@ def Technical(comp):
         #graph.x_labels=map(str,set(date.month))
         #graph.x_labels=date.day
         graph.add(comp,np.array(data)[:,1])
-        graph_data2015=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T WHERE year(Date) = 2014")
+        graph_data3m=graph.render_data_uri()
+        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<180;")
+        graph=pygal.Line()
+        data=c.fetchall()
+        date=pd.DatetimeIndex(np.array(data)[:,0])
+        #print(date)
+        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+        #graph.x_labels=map(str,set(date.month))
+        #graph.x_labels=date.day
+        graph.add(comp,np.array(data)[:,1])
+        graph_data6m=graph.render_data_uri()
+        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<365;")
         graph=pygal.Line()
         data=c.fetchall()
         date=pd.DatetimeIndex(np.array(data)[:,0])
@@ -170,28 +159,42 @@ def Technical(comp):
         graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
         #graph.x_labels=map(str,set(date.month))
         graph.add(comp,np.array(data)[:,1])
-        graph_data2014=graph.render_data_uri()
-        return render_template("compdata.html",comp=comp,graph_data2017=graph_data2017,graph_data2016=graph_data2016,graph_data2015=graph_data2015,graph_data2014=graph_data2014)
+        graph_data1y=graph.render_data_uri()
+        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<730;")
+        graph=pygal.Line()
+        data=c.fetchall()
+        date=pd.DatetimeIndex(np.array(data)[:,0])
+        #print(date)
+        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+        #graph.x_labels=map(str,set(date.month))
+        #graph.x_labels=date.day
+        graph.add(comp,np.array(data)[:,1])
+        graph_data2y=graph.render_data_uri()
+        c.execute("SELECT * FROM "+comp+"_T a")
+        graph=pygal.Line()
+        data=c.fetchall()
+        date=pd.DatetimeIndex(np.array(data)[:,0])
+        #print(date)
+        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+        #graph.x_labels=map(str,set(date.month))
+        #graph.x_labels=date.day
+        graph.add(comp,np.array(data)[:,1])
+        graph_datamax=graph.render_data_uri()
+        return render_template("compdata.html",comp=comp,graph_data1m=graph_data1m,graph_data3m=graph_data3m,graph_data6m=graph_data6m,graph_data1y=graph_data1y,graph_data2y=graph_data2y,graph_datamax=graph_datamax)
 
 @app.route('/screens/',methods=['GET','POST'])
 def screens():
-    try:
-        if session["logged_in"] == True :
-            if request.method == "POST":
-                QUERY = request.form["search_query"]
-                dfs = []
-                CHUNKS = QUERY.split("AND")
-                for chunk in CHUNKS:
-                    chunk = chunk.lstrip()
-                    chunk = chunk.split(" ")
-                    dfs.append(pd.DataFrame(screen(chunk), columns = ["compname", "Years", chunk[0][:-1]]))
-                df_final = reduce(lambda left,right: pd.merge(left,right,on='compname'), dfs)
-            else:
-                return render_template("screens.html")
-        else:
-            return redirect(url_for("login"))
-    except:
-        return redirect(url_for("login"))
+    if request.method == "POST":
+        QUERY = request.form["search_query"]
+        dfs = []
+        CHUNKS = QUERY.split("AND")
+        for chunk in CHUNKS:
+            chunk = chunk.lstrip()
+            chunk = chunk.split(" ")
+            dfs.append(pd.DataFrame(screen(chunk), columns = ["compname", "Years", chunk[0][:-1]]))
+            df_final = reduce(lambda left,right: pd.merge(left,right,on='compname'), dfs)
+    else:
+        return render_template("screens.html")
 
 
 
