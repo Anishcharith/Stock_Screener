@@ -1,0 +1,86 @@
+{% extends "header.html" %}
+{% block body %}
+<body>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="{{ url_for("static",filename="js/bootstrap.min.js") }}"></script>
+<div>
+
+{% if session["logged_in"] %}
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#userwatchlist" aria-controls="userwatchlist" role="tab" data-toggle="tab">Your Watchlist</a></li>
+    <li role="presentation"><a href="#popular" aria-controls="popular" role="tab" data-toggle="tab">Popular</a></li>
+  </ul>
+
+{% else %}
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#popular" aria-controls="popular" role="tab" data-toggle="tab">Popular</a></li>
+  </ul>
+{% endif %}
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active center" id="userwatchlist">
+<br>
+<br>
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Company Name</th>
+      <th>CMP Rs</th>
+      <th>P/E</th>
+      <th>ROE</th>
+    </tr>
+  </thead>
+  <tbody>
+	{% for comp in usercomps %}
+    <tr>
+		{% if compfound(comp) %}
+		<th scope="row" data-toggle="tooltip" title="Remove from watchlist"><a href= "{{ url_for('removefromwatchlist',comp=comp ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
+		{% else %}
+		<th scope="row" data-toggle="tooltip" title="Add to watchlist"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
+		{% endif %}
+      <td><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
+      <td>gg</td>
+      <td>gg</td>
+      <td>gg</td>
+    </tr>
+	{% endfor %}
+  </tbody>
+</table>
+	</div>
+    <div role="tabpanel" class="tab-pane " id="popular">
+<br>
+<br>
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Company Name</th>
+      <th>CMP Rs</th>
+      <th>P/E</th>
+      <th>ROE</th>
+    </tr>
+  </thead>
+  <tbody>
+	{% for comp in popularcomps %}
+    <tr>
+		{% if compfound(comp) %}
+		<th scope="row" data-toggle="tooltip" title="Remove from watchlist"><a href= "{{ url_for('removefromwatchlist',comp=comp ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
+		{% else %}
+		<th scope="row" data-toggle="tooltip" title="Add to watchlist"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
+		{% endif %}
+      <td><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
+      <td>gg</td>
+      <td>gg</td>
+      <td>gg</td>
+    </tr>
+	{% endfor %}
+  </tbody>
+</table>
+	</div>
+  </div>
+
+</div>
+{% endblock %}

@@ -7,11 +7,26 @@
 	<h1>{{comp}}</h1>
 </center>
 <div class='row'>
+	{% if session["logged_in"] %}
+	{% if compfound(comp) %}
 	<div class="col-lg-5 pull-right" color='blue'>
 		<span class="pull-right">
-        <button class="btn" type="button">Add to watchlist</button>
+			<a href= "{{ url_for('removefromwatchlist',comp=comp ) }}">
+			<button class="btn btn-danger" type="button" >Remove from watchlist</button>
+			</a>
 		</span>
 	</div>
+	{% else %}
+	<div class="col-lg-5 pull-right" color='blue'>
+		<span class="pull-right">
+			<a href= "{{ url_for('addtowatchlist',comp=comp ) }}">
+			<button class="btn btn-primary" type="button" >Add to watchlist</button>
+			</a>
+		</span>
+	</div>
+	{% endif %}
+	{% endif %}
+
 </div>
 <div>
 

@@ -4,8 +4,6 @@ from dbconnect import connection
 import numpy as np
 import pandas as pd
 import datetime
-
-
 from passlib.hash import sha256_crypt
 from MySQLdb import escape_string as thwart
 import gc
@@ -29,22 +27,66 @@ def screen(chunk):
         c = conn.cursor()
     return ans
 
-
 app = Flask(__name__)
+
+def compfound(comp):
+    c,conn=connection()
+    try:
+        if session["logged_in"]==True:
+            c.execute("select compId from nifty200 where compname='"+comp+"';")
+            compId=c.fetchone()[0]
+            x=c.execute("select * from watchlist where userId="+str(session["userid"])+" and compId = "+str(compId)+";")
+            test=c.fetchall()
+            print(test)
+            if x>0:
+                return True
+            else:
+                return False
+    except:
+        return False
+
+app.jinja_env.globals.update(compfound=compfound)
 
 @app.route('/',methods=['GET','POST'])
 def homepage():
+    c,conn=connection()
     if request.method=="POST":
-        print("OK")
-        compx=request.form['search']
-        print(compx)
-        #return redirect(url_for("/login
-        return redirect(url_for("Technical",comp=compx))
-    else:
-        return render_template("main.html")
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
+    return render_template("main.html")
+
+@app.route('/searchreasults/',methods=['GET','POST'])
+def searchreasults(compnames):
+    c,conn=connection()
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
+    return render_template("searchreasults.html",compnames=compnames)
 
 @app.route('/dashboard/', methods = ['GET', 'POST'])
 def dashboard():
+    c,conn=connection()
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
     try:
         if session["logged_in"] == True:    
             flash('Logged in')
@@ -54,6 +96,7 @@ def dashboard():
 
 @app.route('/header/', methods=['GET','POST'])
 def header():
+    c,conn=connection()
     if request.method=="POST":
         print("OK")
         compx=request.form['search']
@@ -66,6 +109,16 @@ def header():
 
 @app.route('/login/',methods=['GET','POST'])
 def login():
+    c,conn=connection()
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
     if request.method=="POST":
         c,conn=connection()
         attempted_username=request.form["username"]
@@ -75,6 +128,7 @@ def login():
         if sha256_crypt.verify(attempted_password,data[2]):
             session["logged_in"] = True
             session["username"] = data[1]
+            session["userid"]=data[0]
             return redirect(url_for("dashboard"))
     return render_template("login.html")
 
@@ -85,6 +139,16 @@ def logout():
 
 @app.route('/register/',methods=['GET','POST'])
 def register_page():
+    c,conn=connection()
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
     if request.method=="POST":
         email=request.form["email"]
         username=request.form["username"]
@@ -92,7 +156,6 @@ def register_page():
         repassword=request.form["repassword"]
         if not(password!=repassword or email==None or len(username)<3 or len(password)<3):
             password=sha256_crypt.encrypt(str(password))
-            c,conn=connection()
             (username)
             x=c.execute("select * from users where username='"+str((username))+"'")
             if int(x)>0:
@@ -109,81 +172,124 @@ def register_page():
 @app.route('/Technical/<comp>/',methods=['GET','POST'])
 def Technical(comp):
     c,conn=connection()
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
     query = "SELECT * FROM %s_F ;"%(comp)
     c.execute(query)
     data_F = c.fetchall()
     header = ["Year", "Sales",	"Depr.", "Int.", "PBT","Tax", "NP", "Div_Amt", "Eq_Share_Cap", "Reserves","Borrowings", "Oth_Liab", "Net_Block", "CWIP",	"Inv", "Oth_Assets", "Rcvbles", "Inven.", "Cash","Eq_Shares"]
-    # print(data)
-    # return render_template("compdata.html",comp=comp,graph_data2017=graph_data2017,graph_data2016=graph_data2016,graph_data2015=graph_data2015,graph_data2014=graph_data2014, data = data)
-    #return render_template("compadata.html",comp=comp, data_F = data_F, header = header)
+    c,conn=connection()
+    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<30;")
+    graph=pygal.Line()
+    data=c.fetchall()
+    date=pd.DatetimeIndex(np.array(data)[:,0])
+    graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+    graph.add(comp,np.array(data)[:,1])
+    graph_data1m=graph.render_data_uri()
+    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<90;")
+    graph=pygal.Line()
+    data=c.fetchall()
+    date=pd.DatetimeIndex(np.array(data)[:,0])
+    graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+    graph.add(comp,np.array(data)[:,1])
+    graph_data3m=graph.render_data_uri()
+    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<180;")
+    graph=pygal.Line()
+    data=c.fetchall()
+    date=pd.DatetimeIndex(np.array(data)[:,0])
+    graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+    graph.add(comp,np.array(data)[:,1])
+    graph_data6m=graph.render_data_uri()
+    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<365;")
+    graph=pygal.Line()
+    data=c.fetchall()
+    date=pd.DatetimeIndex(np.array(data)[:,0])
+    graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+    graph.add(comp,np.array(data)[:,1])
+    graph_data1y=graph.render_data_uri()
+    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<730;")
+    graph=pygal.Line()
+    data=c.fetchall()
+    date=pd.DatetimeIndex(np.array(data)[:,0])
+    graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+    graph.add(comp,np.array(data)[:,1])
+    graph_data2y=graph.render_data_uri()
+    c.execute("SELECT * FROM "+comp+"_T a")
+    graph=pygal.Line()
+    data=c.fetchall()
+    date=pd.DatetimeIndex(np.array(data)[:,0])
+    graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
+    graph.add(comp,np.array(data)[:,1])
+    graph_datamax=graph.render_data_uri()
+    return render_template("compdata.html",comp=comp,graph_data1m=graph_data1m,graph_data3m=graph_data3m,graph_data6m=graph_data6m,graph_data1y=graph_data1y,graph_data2y=graph_data2y,graph_datamax=graph_datamax)
+
+@app.route('/watchlist/',methods=['GET','POST'])
+def test():
     if request.method=="POST":
-        compx=request.form['search']
-        return redirect(url_for("Technical",comp=compx))
-    else:
-        c,conn=connection()
-        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<30;")
-        graph=pygal.Line()#explicit_size=True )#,width=1500, height=600)
-        data=c.fetchall()
-        date=pd.DatetimeIndex(np.array(data)[:,0])
-        #print(date)
-        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-        #graph.x_labels=map(str,set(date.month))
-        graph.add(comp,np.array(data)[:,1])
-        graph_data1m=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<90;")
-        graph=pygal.Line()
-        data=c.fetchall()
-        date=pd.DatetimeIndex(np.array(data)[:,0])
-        #print(date)
-        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-        #graph.x_labels=map(str,set(date.month))
-        #graph.x_labels=date.day
-        graph.add(comp,np.array(data)[:,1])
-        graph_data3m=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<180;")
-        graph=pygal.Line()
-        data=c.fetchall()
-        date=pd.DatetimeIndex(np.array(data)[:,0])
-        #print(date)
-        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-        #graph.x_labels=map(str,set(date.month))
-        #graph.x_labels=date.day
-        graph.add(comp,np.array(data)[:,1])
-        graph_data6m=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<365;")
-        graph=pygal.Line()
-        data=c.fetchall()
-        date=pd.DatetimeIndex(np.array(data)[:,0])
-        #print(date)
-        #graph.x_labels=date.day
-        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-        #graph.x_labels=map(str,set(date.month))
-        graph.add(comp,np.array(data)[:,1])
-        graph_data1y=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<730;")
-        graph=pygal.Line()
-        data=c.fetchall()
-        date=pd.DatetimeIndex(np.array(data)[:,0])
-        #print(date)
-        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-        #graph.x_labels=map(str,set(date.month))
-        #graph.x_labels=date.day
-        graph.add(comp,np.array(data)[:,1])
-        graph_data2y=graph.render_data_uri()
-        c.execute("SELECT * FROM "+comp+"_T a")
-        graph=pygal.Line()
-        data=c.fetchall()
-        date=pd.DatetimeIndex(np.array(data)[:,0])
-        #print(date)
-        graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-        #graph.x_labels=map(str,set(date.month))
-        #graph.x_labels=date.day
-        graph.add(comp,np.array(data)[:,1])
-        graph_datamax=graph.render_data_uri()
-        return render_template("compdata.html",comp=comp,graph_data1m=graph_data1m,graph_data3m=graph_data3m,graph_data6m=graph_data6m,graph_data1y=graph_data1y,graph_data2y=graph_data2y,graph_datamax=graph_datamax)
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
+    c,conn=connection()
+    try:
+        if session["logged_in"]:
+            c.execute("select compname from nifty200 where compId in (select compId from watchlist group by compId order by count(*) )limit 10;")
+            popularcomps=np.array(c.fetchall())[:,0]
+            c.execute("select compname from nifty200 where compId in (select compId from watchlist where userId="+str(session["userid"])+");")
+            usercomps=np.array(c.fetchall())[:,0]
+            return render_template("watchlist.html",popularcomps=popularcomps,usercomps=usercomps)
+    except:
+        flash('Need to login first')
+        return redirect(url_for("login"))
+
+@app.route('/addtowatchlist/<comp>/',methods=['GET','POST'])
+def addtowatchlist(comp):
+    c,conn=connection()
+    if session["logged_in"]==True:
+        c.execute("select compId from nifty200 where compname='"+comp+"';")
+        compId=c.fetchone()[0]
+        c.execute("select uid from users where username='"+session['username']+"';")
+        userId=c.fetchone()[0]
+        c.execute("insert into watchlist (compId,userId) values("+str(compId)+","+str(userId)+");")
+        conn.commit()
+        flash("added to watchlist")
+        return redirect(url_for("Technical",comp=comp))
+
+@app.route('/removefromwatchlist/<comp>/',methods=['GET','POST'])
+def removefromwatchlist(comp):
+    c,conn=connection()
+    if session["logged_in"]==True:
+        c.execute("select compId from nifty200 where compname='"+comp+"';")
+        compId=c.fetchone()[0]
+        c.execute("select uid from users where username='"+session['username']+"';")
+        userId=c.fetchone()[0]
+        c.execute("delete from watchlist where compId="+str(compId)+" and userId = "+str(userId)+";")
+        conn.commit()
+        flash("deleted from watchlist")
+        return redirect(url_for("Technical",comp=comp))
 
 @app.route('/screens/',methods=['GET','POST'])
 def screens():
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
     if request.method == "POST":
         QUERY = request.form["search_query"]
         dfs = []
