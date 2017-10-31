@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, request, redirect, url_for, session
-from content_management import content
+#from content_management import content
 from dbconnect import connection
 import numpy as np
 import pandas as pd
@@ -11,9 +11,9 @@ import scipy
 import pygal
 
 def screen(chunk):
-    c.execute("select compname from companies;")
+    c,conn=connection()
+    c.execute("select Comp_ID from nse200_F;")
     comp_names = np.array(c.fetchall())
-    chunk = ["roe3", ">", "30"]
     ans = []
     for comp in comp_names:
         procname =  chunk[0][:-1]
@@ -21,11 +21,12 @@ def screen(chunk):
         output = c.callproc(procname, args)
         c.execute('select @_'+procname+'_0, @_'+procname+'_1, @_'+procname+'_2')
         temp = c.fetchall()[0]
+        temp_1=temp[0].decode("UTF-8")
         if (eval(str(temp[2])+chunk[1]+chunk[2])):
-            ans.append(temp)
+            ans.append(temp_1)
         c.close()
         c = conn.cursor()
-    return ans
+    return set(ans)
 
 app = Flask(__name__)
 
@@ -45,6 +46,22 @@ def compfound(comp):
     except:
         return False
 
+def screenfound(screenname):
+    c,conn=connection()
+    try:
+        if session["logged_in"]==True:
+            c.execute("select screenId from nifty200 where screenname='"+screenname+"';")
+            screenId=c.fetchone()[0]
+            x=c.execute("select * from screenlist where userId="+str(session["userid"])+"and screenId="+str(screenId)+";")
+            if x>0:
+                return True
+            else:
+                return False
+    except:
+        return False
+            
+
+    
 app.jinja_env.globals.update(compfound=compfound)
 
 @app.route('/',methods=['GET','POST'])
@@ -74,6 +91,24 @@ def searchreasults(compnames):
         except:
             pass
     return render_template("searchreasults.html",compnames=compnames)
+
+@app.route('/screensearchreasults/',methods=['GET','POST'])
+def screensearchreasults(screenname):
+    c,conn=connection()
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
+    c.execute("select screenname,definition from nifty200 where screenname like '%"+screenname+"%';")
+    screennames=np.array(c.fetchall())[:,0]
+    definitions=np.array(c.fetchall())[:,1]
+    return render_template("screensearchreasults.html",screennames=screennames,definitions=definitions)
+
 
 @app.route('/dashboard/', methods = ['GET', 'POST'])
 def dashboard():
@@ -177,6 +212,28 @@ def register_page():
             return render_template("register.html")
     return render_template("register.html")
 
+@app.route('/createscreen/',methods=['GET','POST'])
+def createscreen():
+    c,conn=connection()
+    query='gg'
+    if request.method=="POST":
+        try:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
+        except:
+            pass
+    if request.method=="POST":
+        screenname=request.form["screenname"]
+        description=request.form["description"]
+        x=c.execute("select * from screens where screenname='"+str(screenname)+"';")
+        if int(x)>0:
+            flash("Screen name already taken")
+            return 
+    return render_template("createscreen.html",query=query)
+
 @app.route('/Technical/<comp>/',methods=['GET','POST'])
 def Technical(comp):
     c,conn=connection()
@@ -241,6 +298,10 @@ def Technical(comp):
     compname=np.array(c.fetchone())[0]
     return render_template("compdata.html",compname=compname,comp=comp,graph_data1m=graph_data1m,graph_data3m=graph_data3m,graph_data6m=graph_data6m,graph_data1y=graph_data1y,graph_data2y=graph_data2y,graph_datamax=graph_datamax)
 
+@app.route('/screener/',methods=['GET','POST'])
+def screener():
+    return render_template("screen.html")
+
 @app.route('/watchlist/',methods=['GET','POST'])
 def test():
     c,conn=connection()
@@ -266,6 +327,13 @@ def test():
     except:
         flash('Need to login first')
         return redirect(url_for("login"))
+
+"""
+@app.route('/screenlist/',methods=['GET','POST'])
+def test():
+    print('gg')
+    pass
+"""
 
 @app.route('/addtowatchlist/<comp>/',methods=['GET','POST'])
 def addtowatchlist(comp):
@@ -306,14 +374,19 @@ def screens():
         except:
             pass
     if request.method == "POST":
-        QUERY = request.form["search_query"]
+        QUERY = request.form["writescreen"]
         dfs = []
         CHUNKS = QUERY.split("AND")
         for chunk in CHUNKS:
             chunk = chunk.lstrip()
             chunk = chunk.split(" ")
-            dfs.append(pd.DataFrame(screen(chunk), columns = ["compname", "Years", chunk[0][:-1]]))
-            df_final = reduce(lambda left,right: pd.merge(left,right,on='compname'), dfs)
+            dfs.append(screen(chunk))
+        output=dfs[0]
+        for q in dfs:
+            output=set.intersection(q,output)
+        print(output)
+        return render_template("screenreasults.html",compnames=output,query=QUERY)
+
     else:
         return render_template("screens.html")
 

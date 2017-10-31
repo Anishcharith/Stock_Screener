@@ -1,0 +1,34 @@
+{% extends "header.html" %}
+{% block body %}
+<body>
+<center>
+<img src ="{{ url_for("static",filename="images/mainlogo.png")}}">
+<h3 style='margin-top:-20px'>Stock_Screener</h3>
+</center>
+<br>
+<br>
+<div align="center" class="container">
+<form class="form-horizontal justify-content-center align-items-center" action="" method="post">
+  <fieldset>
+	  <legend>{{query}}</legend>
+    <div class="form-group">
+      <div class="col-lg-5">
+		  <input name='screenname'style="text-align:center;font-size=1em;margin-left:auto;margin-right:auto" class="form-control" id="screenname" placeholder="Screen Name" type="text" value="{{ request.form.screenname }}">
+      </div>
+	</div>
+    <div class="form-group">
+      <div class="col-lg-6">
+		  <input name='description' style="text-align:center;font-size=1em"class="form-control" id="description" placeholder="Description" type="text" value="{{ request.form.description }}">
+      </div>
+    </div>
+    <div class="form-group justify-content-center">
+      <div class="col-lg-5 pull-center">
+        <button type="reset" class="btn btn-default">Cancel</button>
+        <button type="submit" class="btn btn-primary" value="Login">Submit</button>
+      </div>
+    </div>
+  </fieldset>
+</form>
+</div>
+</body>
+{% endblock %}

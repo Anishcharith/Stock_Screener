@@ -1,0 +1,30 @@
+{% extends "header.html" %}
+{% block body %}
+<body>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="{{ url_for("static",filename="js/bootstrap.min.js") }}"></script>
+<center>
+	<h1>{{screenname}}</h1>
+</center>
+<div class='row'>
+	{% if session["logged_in"] %}
+	{% if screenfound(screenname) %}
+	<div class="col-lg-5 pull-right" color='blue'>
+		<span class="pull-right">
+			<a href= "{{ url_for('removefromscreens',screenname=screenname ) }}">
+			<button class="btn btn-danger" type="button" >Remove from Screenlist</button>
+			</a>
+		</span>
+	</div>
+	{% else %}
+	<div class="col-lg-5 pull-right" color='blue'>
+		<span class="pull-right">
+			<a href= "{{ url_for('addtoscreens',screenname=screenname ) }}">
+			<button class="btn btn-primary" type="button" >Add to Screenlist</button>
+			</a>
+		</span>
+	</div>
+	{% endif %}
+	{% endif %}
+
+</div>
