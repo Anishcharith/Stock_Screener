@@ -2,7 +2,7 @@
 {% block body %}
 <body>
 <center>
-<img src ="{{ url_for("static",filename="images/mainlogo.png")}}">
+<img class="animated fadeIn" src ="{{ url_for("static",filename="images/mainlogo.png")}}">
 <h3 style='margin-top:-20px'>Stock_Screener</h3>
 </center>
 <br>
@@ -13,9 +13,11 @@
     <form role="existingscreens" method="post">
     <div class="input-group">
       <span class="input-group-btn">
-        <button type="submit" class="btn btn-default" value="existingscreens" >Go!</button>
+        <button type="submit" class="btn btn-default animated fadeIn" value="existingscreens" >Go!</button>
       </span>
-	  <input type="text" class="form-control" placeholder="Search for Screens" id="existingscreens" name="existingscreens"  value="{{ request.form.existingscreens }}">
+	  <center>
+	  <input type="text" class="form-control text-center animated fadeIn" placeholder="Search for Screens" id="existingscreens" name="existingscreens"  value="{{ request.form.existingscreens }}">
+	  </center>
     </div><!-- /input-group -->
 	</form>
   </div><!-- /.col-lg-6 -->
@@ -23,9 +25,11 @@
   <div class="col-lg-5 pull-right">
     <form role="writescreen" method="post">
     <div class="input-group">
-		<input type="text" class="form-control" placeholder="Write your Own" id="writescreen " name="writescreen" value="{{ request.form.writescreen }}">
+		<center>
+		<input type="text" class="form-control text-center animated fadeIn" placeholder="Write your Own" id="writescreen " name="writescreen" value="{{ request.form.writescreen }}">
+		</center>
       <span class="input-group-btn">
-        <button type="submit" class="btn btn-default" value="writingscreen" >Go!</button>
+        <button type="submit" class="btn btn-default animated fadeIn" value="writingscreen" >Go!</button>
       </span>
     </div><!-- /input-group -->
 	</form>

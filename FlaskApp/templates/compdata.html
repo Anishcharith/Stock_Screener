@@ -4,7 +4,7 @@
 <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="{{ url_for("static",filename="js/bootstrap.min.js") }}"></script>
 <center>
-	<h1>{{comp}}</h1>
+	<h1>{{compname}}</h1>
 </center>
 <div class='row'>
 	{% if session["logged_in"] %}
@@ -37,26 +37,26 @@
     <li role="presentation"><a href="#6m" aria-controls="6m" role="tab" data-toggle="tab">6 Months</a></li>
     <li role="presentation"><a href="#1y" aria-controls="1y" role="tab" data-toggle="tab">1 Year</a></li>
     <li role="presentation"><a href="#3y" aria-controls="3y" role="tab" data-toggle="tab">3 Years</a></li>
-    <li role="presentation"><a href="#max" aria-controls="max" role="tab" data-toggle="tab">Max</a></li>
+    <li role="presentation" ><a href="#max" aria-controls="max" role="tab" data-toggle="tab">Max</a></li>
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active center" id="1m">
+    <div role="tabpanel" class="tab-pane active center animated fadeIn" id="1m">
 		<embed type="image/svg+xml" src={{graph_data1m|safe}} style='width:1350px;height:600px;'/>
 	</div>
-    <div role="tabpanel" class="tab-pane center" id="3m">
+    <div role="tabpanel" class="tab-pane center animated fadeIn" id="3m">
 		<embed type="image/svg+xml" src={{graph_data3m|safe}} style='width:1350px;height:600px;'/>
 	</div>
-    <div role="tabpanel" class="tab-pane center" id="6m">
+    <div role="tabpanel" class="tab-pane center animated fadeIn" id="6m">
 		<embed type="image/svg+xml" src={{graph_data6m|safe}} style='width:1350px;height:600px;'/>
 	</div>
-    <div role="tabpanel" class="tab-pane center" id="1y">
+    <div role="tabpanel" class="tab-pane center animated fadeIn" id="1y">
 		<embed type="image/svg+xml" src={{graph_data1y|safe}} style='width:1350px;height:600px;'/>
 	</div>
-    <div role="tabpanel" class="tab-pane " id="3y">
+    <div role="tabpanel" class="tab-pane  center animated fadeIn" id="3y">
 		<embed type="image/svg+xml" src={{graph_data2y|safe}} style='width:1350px;height:600px;'/>
 	</div>
-    <div role="tabpanel" class="tab-pane " id="max">
+    <div role="tabpanel" class="tab-pane  center animated fadeIn" id="max">
 		<embed type="image/svg+xml" src={{graph_datamax|safe}} style='width:1350px;height:600px;'/>
 	</div>
   </div>

@@ -26,25 +26,25 @@
 <table class="table table-hover">
   <thead>
     <tr>
-      <th>#</th>
-      <th>Company Name</th>
-      <th>CMP Rs</th>
-      <th>P/E</th>
-      <th>ROE</th>
+      <th></th>
+      <th style="font-size:1em">Company Name</th>
+      <th style="font-size:1em">CMP Rs</th>
+      <th style="font-size:1em">P/E</th>
+      <th style="font-size:1em">ROE</th>
     </tr>
   </thead>
   <tbody>
 	{% for comp in usercomps %}
-    <tr>
+    <tr class="animated fadeIn">
 		{% if compfound(comp) %}
-		<th scope="row" data-toggle="tooltip" title="Remove from watchlist"><a href= "{{ url_for('removefromwatchlist',comp=comp ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
+		<th scope="row" data-toggle="tooltip" title="Remove from watchlist" style="font-size:1em"><a href= "{{ url_for('removefromwatchlist',comp=comp ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
 		{% else %}
-		<th scope="row" data-toggle="tooltip" title="Add to watchlist"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
+		<th scope="row" data-toggle="tooltip" title="Add to watchlist" style="font-size:1em"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
 		{% endif %}
-      <td><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
-      <td>gg</td>
-      <td>gg</td>
-      <td>gg</td>
+      <td style="font-size:1em"><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
+      <td style="font-size:1em">gg</td>
+      <td style="font-size:1em">gg</td>
+      <td style="font-size:1em">gg</td>
     </tr>
 	{% endfor %}
   </tbody>
@@ -56,25 +56,25 @@
 <table class="table table-hover">
   <thead>
     <tr>
-      <th>#</th>
-      <th>Company Name</th>
-      <th>CMP Rs</th>
-      <th>P/E</th>
-      <th>ROE</th>
+      <th></th>
+      <th style="font-size:1em">Company Name</th>
+      <th style="font-size:1em">CMP Rs</th>
+      <th style="font-size:1em">P/E</th>
+      <th style="font-size:1em">ROE</th>
     </tr>
   </thead>
   <tbody>
 	{% for comp in popularcomps %}
-    <tr>
+    <tr class="animated fadeIn">
 		{% if compfound(comp) %}
-		<th scope="row" data-toggle="tooltip" title="Remove from watchlist"><a href= "{{ url_for('removefromwatchlist',comp=comp ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
+		<th scope="row" data-toggle="tooltip" title="Remove from watchlist" style="font-size:1em"><a href= "{{ url_for('removefromwatchlist',comp=comp ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
 		{% else %}
-		<th scope="row" data-toggle="tooltip" title="Add to watchlist"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
+		<th scope="row" data-toggle="tooltip" title="Add to watchlist" style="font-size:1em"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
 		{% endif %}
-      <td><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
-      <td>gg</td>
-      <td>gg</td>
-      <td>gg</td>
+      <td style="font-size:1em"><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
+      <td style="font-size:1em">gg</td>
+      <td style="font-size:1em">gg</td>
+      <td style="font-size:1em">gg</td>
     </tr>
 	{% endfor %}
   </tbody>

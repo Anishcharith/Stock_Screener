@@ -90,7 +90,7 @@ def dashboard():
     try:
         if session["logged_in"] == True:    
             flash('Logged in')
-            return render_template("dashboard.html")
+            return redirect(url_for("homepage"))
     except:
         return redirect(url_for("login"))
 
@@ -125,11 +125,15 @@ def login():
         attempted_password=request.form["password"]
         data=c.execute("SELECT * FROM users WHERE username='%s';"%str((attempted_username)))
         data=c.fetchone()
-        if sha256_crypt.verify(attempted_password,data[2]):
-            session["logged_in"] = True
-            session["username"] = data[1]
-            session["userid"]=data[0]
-            return redirect(url_for("dashboard"))
+        try:
+            if sha256_crypt.verify(attempted_password,data[2]):
+                session["logged_in"] = True
+                session["username"] = data[1]
+                session["userid"]=data[0]
+                return redirect(url_for("dashboard"))
+        except:
+            flash('invalid credentials, try again')
+            return redirect(url_for("login"))
     return render_template("login.html")
 
 @app.route('/logout/',methods=['GET','POST'])
@@ -159,6 +163,7 @@ def register_page():
             (username)
             x=c.execute("select * from users where username='"+str((username))+"'")
             if int(x)>0:
+                flash("username already taken")
                 return render_template("register.html")
             else:
                 c.execute("INSERT INTO users (username,password,email) VALUES ('%s','%s','%s');"%(str((username)),str((password)),str((email))))
@@ -167,6 +172,9 @@ def register_page():
                 conn.close()
                 gc.collect()
                 return redirect(url_for("login"))
+        else:
+            flash(" error in one of the fields")
+            return render_template("register.html")
     return render_template("register.html")
 
 @app.route('/Technical/<comp>/',methods=['GET','POST'])
@@ -186,52 +194,56 @@ def Technical(comp):
     data_F = c.fetchall()
     header = ["Year", "Sales",	"Depr.", "Int.", "PBT","Tax", "NP", "Div_Amt", "Eq_Share_Cap", "Reserves","Borrowings", "Oth_Liab", "Net_Block", "CWIP",	"Inv", "Oth_Assets", "Rcvbles", "Inven.", "Cash","Eq_Shares"]
     c,conn=connection()
-    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<30;")
+    c.execute("SELECT * FROM nse200_T a, (select * from nse200_T where Comp_ID='"+comp+"' order by Date DESC limit 1) as b WHERE a.Comp_ID='"+comp+"' and DATEDIFF(b.Date,a.Date)<30;")
     graph=pygal.Line()
     data=c.fetchall()
-    date=pd.DatetimeIndex(np.array(data)[:,0])
+    print(data)
+    date=pd.DatetimeIndex(np.array(data)[:,1])
     graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-    graph.add(comp,np.array(data)[:,1])
+    graph.add(comp,np.array(data)[:,6])
     graph_data1m=graph.render_data_uri()
-    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<90;")
+    c.execute("SELECT * FROM nse200_T a, (select * from nse200_T where Comp_ID='"+comp+"' order by Date DESC limit 1) as b WHERE a.Comp_ID='"+comp+"' and DATEDIFF(b.Date,a.Date)<90;")
     graph=pygal.Line()
     data=c.fetchall()
-    date=pd.DatetimeIndex(np.array(data)[:,0])
+    date=pd.DatetimeIndex(np.array(data)[:,1])
     graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-    graph.add(comp,np.array(data)[:,1])
+    graph.add(comp,np.array(data)[:,6])
     graph_data3m=graph.render_data_uri()
-    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<180;")
+    c.execute("SELECT * FROM nse200_T a, (select * from nse200_T where Comp_ID='"+comp+"' order by Date DESC limit 1) as b WHERE a.Comp_ID='"+comp+"' and DATEDIFF(b.Date,a.Date)<180;")
     graph=pygal.Line()
     data=c.fetchall()
-    date=pd.DatetimeIndex(np.array(data)[:,0])
+    date=pd.DatetimeIndex(np.array(data)[:,1])
     graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-    graph.add(comp,np.array(data)[:,1])
+    graph.add(comp,np.array(data)[:,6])
     graph_data6m=graph.render_data_uri()
-    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<365;")
+    c.execute("SELECT * FROM nse200_T a, (select * from nse200_T where Comp_ID='"+comp+"' order by Date DESC limit 1) as b WHERE a.Comp_ID='"+comp+"' and DATEDIFF(b.Date,a.Date)<365;")
     graph=pygal.Line()
     data=c.fetchall()
-    date=pd.DatetimeIndex(np.array(data)[:,0])
+    date=pd.DatetimeIndex(np.array(data)[:,1])
     graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-    graph.add(comp,np.array(data)[:,1])
+    graph.add(comp,np.array(data)[:,6])
     graph_data1y=graph.render_data_uri()
-    c.execute("SELECT * FROM "+comp+"_T a, (select * from "+comp+"_T order by Date DESC limit 1) as b WHERE DATEDIFF(b.Date,a.Date)<730;")
+    c.execute("SELECT * FROM nse200_T a, (select * from nse200_T where Comp_ID='"+comp+"' order by Date DESC limit 1) as b WHERE a.Comp_ID='"+comp+"' and DATEDIFF(b.Date,a.Date)<730;")
     graph=pygal.Line()
     data=c.fetchall()
-    date=pd.DatetimeIndex(np.array(data)[:,0])
+    date=pd.DatetimeIndex(np.array(data)[:,1])
     graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-    graph.add(comp,np.array(data)[:,1])
+    graph.add(comp,np.array(data)[:,6])
     graph_data2y=graph.render_data_uri()
-    c.execute("SELECT * FROM "+comp+"_T a")
+    c.execute("SELECT * FROM nse200_T where Comp_ID='"+comp+"' order by Date asc")
     graph=pygal.Line()
     data=c.fetchall()
-    date=pd.DatetimeIndex(np.array(data)[:,0])
+    date=pd.DatetimeIndex(np.array(data)[:,1])
     graph.x_labels = map(lambda d: d.strftime('%Y-%m-%d'),date)
-    graph.add(comp,np.array(data)[:,1])
+    graph.add(comp,np.array(data)[:,6])
     graph_datamax=graph.render_data_uri()
-    return render_template("compdata.html",comp=comp,graph_data1m=graph_data1m,graph_data3m=graph_data3m,graph_data6m=graph_data6m,graph_data1y=graph_data1y,graph_data2y=graph_data2y,graph_datamax=graph_datamax)
+    c.execute("select Company from nse200 where Comp_ID='"+comp+"';")
+    compname=np.array(c.fetchone())[0]
+    return render_template("compdata.html",compname=compname,comp=comp,graph_data1m=graph_data1m,graph_data3m=graph_data3m,graph_data6m=graph_data6m,graph_data1y=graph_data1y,graph_data2y=graph_data2y,graph_datamax=graph_datamax)
 
 @app.route('/watchlist/',methods=['GET','POST'])
 def test():
+    c,conn=connection()
     if request.method=="POST":
         try:
             compx=request.form['search']
@@ -241,13 +253,15 @@ def test():
             return render_template("searchreasults.html",compnames=compnames)
         except:
             pass
-    c,conn=connection()
     try:
         if session["logged_in"]:
             c.execute("select compname from nifty200 where compId in (select compId from watchlist group by compId order by count(*) )limit 10;")
             popularcomps=np.array(c.fetchall())[:,0]
             c.execute("select compname from nifty200 where compId in (select compId from watchlist where userId="+str(session["userid"])+");")
-            usercomps=np.array(c.fetchall())[:,0]
+            try:
+                usercomps=np.array(c.fetchall())[:,0]
+            except:
+                usercomps=[]
             return render_template("watchlist.html",popularcomps=popularcomps,usercomps=usercomps)
     except:
         flash('Need to login first')
@@ -281,6 +295,7 @@ def removefromwatchlist(comp):
 
 @app.route('/screens/',methods=['GET','POST'])
 def screens():
+    c,conn=connection()
     if request.method=="POST":
         try:
             compx=request.form['search']
