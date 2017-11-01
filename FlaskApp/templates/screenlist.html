@@ -1,0 +1,82 @@
+{% extends "header.html" %}
+{% block body %}
+<body>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="{{ url_for("static",filename="js/bootstrap.min.js") }}"></script>
+<div>
+
+{% if session["logged_in"] %}
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#userscreenlist" aria-controls="userscreenlist" role="tab" data-toggle="tab">Your screenlist</a></li>
+    <li role="presentation"><a href="#popular" aria-controls="popular" role="tab" data-toggle="tab">Popular</a></li>
+  </ul>
+
+{% else %}
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#popular" aria-controls="popular" role="tab" data-toggle="tab">Popular</a></li>
+  </ul>
+{% endif %}
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active center" id="userscreenlist">
+<br>
+<br>
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th></th>
+      <th style="font-size:1em">Screen Name</th>
+      <th style="font-size:1em">Definition</th>
+      <th style="font-size:1em">Rating</th>
+    </tr>
+  </thead>
+  <tbody>
+	{% for screenname in userscreens %}
+    <tr class="animated fadeIn">
+		{% if screenfound(screenname) %}
+		<th scope="row" data-toggle="tooltip" title="Remove from screenlist" style="font-size:1em"><a href= "{{ url_for('removefromscreenlist',screenname=screenname ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
+		{% else %}
+		<th scope="row" data-toggle="tooltip" title="Add to screenlist" style="font-size:1em"><a href= "{{ url_for('addtoscreenlist',screenname=screenname ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
+		{% endif %}
+      <td style="font-size:1em"><a href={{ url_for("existingscreenreasults",screenname=screenname) }}>{{screenname}}</a></td>
+	  <td style="font-size:1em">{{ getdefinition(screenname) }}</td>
+	  <td style="font-size:1em">{{ getrating(screenname) }}</td>
+    </tr>
+	{% endfor %}
+  </tbody>
+</table>
+	</div>
+    <div role="tabpanel" class="tab-pane " id="popular">
+<br>
+<br>
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th></th>
+      <th style="font-size:1em">Screen Name</th>
+      <th style="font-size:1em">Definition</th>
+      <th style="font-size:1em">Rating</th>
+    </tr>
+  </thead>
+  <tbody>
+	{% for screenname in popularscreens %}
+    <tr class="animated fadeIn">
+		{% if screenfound(screenname) %}
+		<th scope="row" data-toggle="tooltip" title="Remove from screenlist" style="font-size:1em"><a href= "{{ url_for('removefromscreenlist',screenname=screenname ) }}"><i class="fa fa-close" style="color:red"></i></a></th>
+		{% else %}
+		<th scope="row" data-toggle="tooltip" title="Add to screenlist" style="font-size:1em"><a href= "{{ url_for('addtoscreenlist',screenname=screenname ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
+		{% endif %}
+      <td style="font-size:1em"><a href={{ url_for("existingscreenreasults",screenname=screenname) }}>{{screenname}}</a></td>
+	  <td style="font-size:1em">{{ getdefinition(screenname) }}</td>
+	  <td style="font-size:1em">{{ getrating(screenname) }}</td>
+    </tr>
+	{% endfor %}
+  </tbody>
+</table>
+	</div>
+  </div>
+
+</div>
+{% endblock %}

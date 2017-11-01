@@ -42,9 +42,9 @@
 		<th scope="row" data-toggle="tooltip" title="Add to watchlist" style="font-size:1em"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
 		{% endif %}
       <td style="font-size:1em"><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
-      <td style="font-size:1em">gg</td>
-      <td style="font-size:1em">gg</td>
-      <td style="font-size:1em">gg</td>
+	  <td style="font-size:1em">{{getcmp(comp)}}</td>
+	  <td style="font-size:1em">{{getpe(comp)}}</td>
+	  <td style="font-size:1em">{{getroe(comp)}}</td>
     </tr>
 	{% endfor %}
   </tbody>
@@ -72,9 +72,9 @@
 		<th scope="row" data-toggle="tooltip" title="Add to watchlist" style="font-size:1em"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
 		{% endif %}
       <td style="font-size:1em"><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
-      <td style="font-size:1em">gg</td>
-      <td style="font-size:1em">gg</td>
-      <td style="font-size:1em">gg</td>
+	  <td style="font-size:1em">{{getcmp(comp)}}</td>
+	  <td style="font-size:1em">{{getpe(comp)}}</td>
+	  <td style="font-size:1em">{{getroe(comp)}}</td>
     </tr>
 	{% endfor %}
   </tbody>

@@ -3,8 +3,35 @@
 <body>
 <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="{{ url_for("static",filename="js/bootstrap.min.js") }}"></script>
-<div>
+<center>
+	<h1>{{screenname}}</h1>
+</center>
+<center>
+	<h2>{{QUERY}}</h1>
+</center>
+<div class='row'>
+	{% if session["logged_in"] %}
+	{% if screenfound(screenname) %}
+	<div class="col-lg-5 pull-right" color='blue'>
+		<span class="pull-right">
+			<a href= "{{ url_for('removefromscreenlist',screenname=screenname ) }}">
+			<button class="btn btn-danger" type="button" >Remove from Screenlist</button>
+			</a>
+		</span>
+	</div>
+	{% else %}
+	<div class="col-lg-5 pull-right" color='blue'>
+		<span class="pull-right">
+			<a href= "{{ url_for('addtoscreenlist',screenname=screenname ) }}">
+			<button class="btn btn-primary" type="button" >Add to Screenlist</button>
+			</a>
+		</span>
+	</div>
+	{% endif %}
+	{% endif %}
 
+</div>
+<div>
 <br>
 <br>
 <table class="table table-hover">
@@ -26,9 +53,9 @@
 		<th  style="font-size:1em"scope="row" data-toggle="tooltip" title="Add to watchlist"><a href= "{{ url_for('addtowatchlist',comp=comp ) }}"><i class="fa fa-plus" style="color:green"></i></a></th>
 		{% endif %}
       <td style="font-size:1em"><a href={{ url_for("Technical",comp=comp) }}>{{comp}}</a></td>
-	  <td style="font-size:1em">{{getcmp(comp)}}</td>
-	  <td style="font-size:1em">{{getpe(comp)}}</td>
-	  <td style="font-size:1em">{{getroe(comp}}</td>
+	  <td style="font-size:1em">{{cmprice}}</td>
+      <td style="font-size:1em">gg</td>
+      <td style="font-size:1em">gg</td>
     </tr>
 	{% endfor %}
   </tbody>
