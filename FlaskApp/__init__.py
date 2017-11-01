@@ -56,9 +56,15 @@ def screen(chunk):
     comp_names = np.array(c.fetchall())
     ans = []
     for comp in comp_names:
-        procname =  chunk[0][:-1]
-        args = [comp[0], int(chunk[0][-1]), 0.0]
-        print(procname,args)
+        try:
+            spl=chunk[0].split("-")
+            print(spl[1])
+            procname=spl[0]
+            args = [comp[0],spl[1], 0.0]
+        except:
+            procname =  chunk[0][:-1]
+            args = [comp[0], int(chunk[0][-1]), 0.0]
+            print(procname,args)
         output = c.callproc(procname, args)
         c.execute('select @_'+procname+'_0, @_'+procname+'_1, @_'+procname+'_2')
         temp = c.fetchall()[0]
@@ -373,6 +379,11 @@ def watchlist():
             print(compnames)
             return render_template("searchreasults.html",compnames=compnames)
         except:
+            compx=request.form['search']
+            c.execute("select compname from nifty200 where compname like '%"+compx+"%';")
+            compnames=np.array(c.fetchall())[:,0]
+            print(compnames)
+            return render_template("searchreasults.html",compnames=compnames)
             pass
     try:
         if session["logged_in"]:
@@ -385,15 +396,6 @@ def watchlist():
                 usercomps=[]
             return render_template("watchlist.html",popularcomps=popularcomps,usercomps=usercomps)
     except:
-        if session["logged_in"]:
-            c.execute("select compname from nifty200 where compId in (select compId from watchlist group by compId order by count(*) )limit 10;")
-            popularcomps=np.array(c.fetchall())[:,0]
-            c.execute("select compname from nifty200 where compId in (select compId from watchlist where userId="+str(session["userid"])+");")
-            try:
-                usercomps=np.array(c.fetchall())[:,0]
-            except:
-                usercomps=[]
-            return render_template("watchlist.html",popularcomps=popularcomps,usercomps=usercomps)
         flash('Need to login first')
         return redirect(url_for("login"))
 
